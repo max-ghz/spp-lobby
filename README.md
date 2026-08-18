@@ -71,3 +71,18 @@ SPP_LOBBY_BASE_URL=http://put_real_server_here pytest tests/contract/
 mutmut run
 mutmut results
 ```
+
+## Type checking and linting
+
+### Pyright
+`pyright` type-checks `app/` in strict mode.
+```bash
+pyright
+```
+
+### Ruff
+`ruff` lints and formats the whole project.
+```bash
+ruff check .    # lint
+ruff format .   # format
+```
