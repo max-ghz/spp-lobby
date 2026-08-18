@@ -170,11 +170,25 @@ def test_port_out_of_range(client):
 
 def test_minimal_valid_values(client):
     payload = {
-        "advanced": False, "anti_cheat_on": False, "bonus_frequency": 0,
-        "country": "", "current_map": "a", "game_style": "a", "info": "",
-        "max_players": 1, "name": "a", "num_bots": 0, "os": "a",
-        "players": [], "port": 1, "private": False, "realistic": False,
-        "respawn": 0, "survival": False, "version": "a", "wm": False,
+        "advanced": False,
+        "anti_cheat_on": False,
+        "bonus_frequency": 0,
+        "country": "",
+        "current_map": "a",
+        "game_style": "a",
+        "info": "",
+        "max_players": 1,
+        "name": "a",
+        "num_bots": 0,
+        "os": "a",
+        "players": [],
+        "port": 1,
+        "private": False,
+        "realistic": False,
+        "respawn": 0,
+        "survival": False,
+        "version": "a",
+        "wm": False,
     }
 
     resp = client.post("/servers", json=payload)
@@ -183,13 +197,24 @@ def test_minimal_valid_values(client):
 
 def test_maximal_valid_values(client):
     payload = {
-        "advanced": True, "anti_cheat_on": True, "bonus_frequency": 65535,
-        "country": "a" * 2, "current_map": "a" * 16,
-        "game_style": "a" * 3, "info": "a" * 255,
-        "max_players": 1, "name": "a" * 30, "num_bots": 255,
-        "os": "a" * 10, "players": ["p" * 16],
-        "port": 65535, "private": True, "realistic": True,
-        "respawn": 4_294_967_295, "survival": True, "version": "a" * 10,
+        "advanced": True,
+        "anti_cheat_on": True,
+        "bonus_frequency": 65535,
+        "country": "a" * 2,
+        "current_map": "a" * 16,
+        "game_style": "a" * 3,
+        "info": "a" * 255,
+        "max_players": 1,
+        "name": "a" * 30,
+        "num_bots": 255,
+        "os": "a" * 10,
+        "players": ["p" * 16],
+        "port": 65535,
+        "private": True,
+        "realistic": True,
+        "respawn": 4_294_967_295,
+        "survival": True,
+        "version": "a" * 10,
         "wm": True,
     }
 

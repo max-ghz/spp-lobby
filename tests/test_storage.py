@@ -6,13 +6,27 @@ from app.storage import DEFAULT_SERVER_EXPIRY_SECONDS, ServerStore, server_expir
 
 
 def _input(port: int, **overrides) -> RegisterServerInput:
-    kwargs = dict(
-        advanced=False, anti_cheat_on=False, bonus_frequency=0, country="PL",
-        current_map="ctf_Ash", game_style="CTF", info="", max_players=16,
-        name="Test", num_bots=0, os="Linux", players=[], port=port,
-        private=False, realistic=False, respawn=0, survival=False,
-        version="1.0", wm=False,
-    )
+    kwargs = {
+        "advanced": False,
+        "anti_cheat_on": False,
+        "bonus_frequency": 0,
+        "country": "PL",
+        "current_map": "ctf_Ash",
+        "game_style": "CTF",
+        "info": "",
+        "max_players": 16,
+        "name": "Test",
+        "num_bots": 0,
+        "os": "Linux",
+        "players": [],
+        "port": port,
+        "private": False,
+        "realistic": False,
+        "respawn": 0,
+        "survival": False,
+        "version": "1.0",
+        "wm": False,
+    }
     kwargs.update(overrides)
     return RegisterServerInput(**kwargs)
 

@@ -6,6 +6,7 @@ How to use:
 """
 
 import os
+
 import httpx
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:8000")
