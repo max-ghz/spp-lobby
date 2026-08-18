@@ -1,7 +1,23 @@
 REQUIRED_FIELDS = [
-    "advanced", "anti_cheat_on", "bonus_frequency", "country", "current_map",
-    "game_style", "info", "max_players", "name", "num_bots", "os", "players",
-    "port", "private", "realistic", "respawn", "survival", "version", "wm",
+    "advanced",
+    "anti_cheat_on",
+    "bonus_frequency",
+    "country",
+    "current_map",
+    "game_style",
+    "info",
+    "max_players",
+    "name",
+    "num_bots",
+    "os",
+    "players",
+    "port",
+    "private",
+    "realistic",
+    "respawn",
+    "survival",
+    "version",
+    "wm",
 ]
 
 SERVER_FIELDS = REQUIRED_FIELDS + ["ip"]

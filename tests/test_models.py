@@ -5,27 +5,27 @@ from app.models import RegisterServerInput
 
 
 def _valid_boundary_kwargs(**overrides) -> dict:
-    kwargs = dict(
-        advanced=False,
-        anti_cheat_on=False,
-        bonus_frequency=0,
-        country="a" * 2,
-        current_map="a" * 16,
-        game_style="a" * 3,
-        info="a" * 255,
-        max_players=2,
-        name="a" * 30,
-        num_bots=0,
-        os="a" * 10,
-        players=["a" * 16, "b" * 16],
-        port=23073,
-        private=False,
-        realistic=False,
-        respawn=0,
-        survival=False,
-        version="a" * 10,
-        wm=False,
-    )
+    kwargs = {
+        "advanced": False,
+        "anti_cheat_on": False,
+        "bonus_frequency": 0,
+        "country": "a" * 2,
+        "current_map": "a" * 16,
+        "game_style": "a" * 3,
+        "info": "a" * 255,
+        "max_players": 2,
+        "name": "a" * 30,
+        "num_bots": 0,
+        "os": "a" * 10,
+        "players": ["a" * 16, "b" * 16],
+        "port": 23073,
+        "private": False,
+        "realistic": False,
+        "respawn": 0,
+        "survival": False,
+        "version": "a" * 10,
+        "wm": False,
+    }
     kwargs.update(overrides)
     return kwargs
 
