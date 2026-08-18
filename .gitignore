@@ -1,0 +1,12 @@
+GUIDELINES.md
+
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+mutants/
+mutmut-stats.json
+.mutmut-cache
+.venv/
+*.egg-info/
