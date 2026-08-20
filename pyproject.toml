@@ -18,18 +18,21 @@ dev = [
     "ruff>=0.16",
 ]
 
+[tool.setuptools.packages.find]
+include = ["app*", "features*", "shared*"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["app", "features", "shared"]
 
 [tool.mutmut]
-source_paths = ["app"]
+source_paths = ["app", "features", "shared"]
 pytest_add_cli_args_test_selection = ["tests"]
 
 [tool.pyright]
-include = ["app"]
+include = ["app", "features", "shared"]
 exclude = ["tests", ".venv", "mutants"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"

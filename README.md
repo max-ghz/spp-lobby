@@ -5,10 +5,10 @@
 ## Endpoints
 | HTTP Method | Endpoint                      | Returned type                      | Description                                                                                  |
 | ----------- | ----------------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------- |
-| GET         |  `/servers`                   | List<[Server](app/models.py#L54)>  | Returns a list of all registered servers.                                                      |
-| GET         |  `/servers/:ip/:port`         | [Server](app/models.py#L54)        | Returns information about a server specified by the given `ip` and `port`.                     |
+| GET         |  `/servers`                   | List<[Server](features/servers/models/server.py#L6)>  | Returns a list of all registered servers.                                                      |
+| GET         |  `/servers/:ip/:port`         | [Server](features/servers/models/server.py#L6)        | Returns information about a server specified by the given `ip` and `port`.                     |
 | GET         |  `/servers/:ip/:port/players` | List<string>                       | Returns a list of players of a server specified by the given `ip` and `port`.                  |
-| POST        |  `/servers`                   | Empty                               | Registers a new server. Requires [RegisterServerInput](app/models.py#L13) as request's body.   |
+| POST        |  `/servers`                   | Empty                               | Registers a new server. Requires [RegisterServerInput](features/servers/models/register_input.py#L13) as request's body.   |
 
 ## Environment variables
 - `PORT`: what to listen on when run directly (default 8000).
@@ -48,10 +48,10 @@ python scripts/register_test_server.py
 ## Testing
 
 ### Unit tests
-Unit tests cover `app/models.py` and `app/storage.py` directly.
+Unit tests cover `features/servers/models/` and `features/servers/services/server_storage.py` directly.
 ```bash
 pytest                                       # all tests
-pytest --cov=app --cov-report=term-missing   # with coverage
+pytest --cov --cov-report=term-missing       # with coverage
 ```
 
 ### Contract tests
@@ -66,7 +66,7 @@ SPP_LOBBY_BASE_URL=http://put_real_server_here pytest tests/contract/
 ```
 
 ### Mutation testing
-`mutmut` introduces small bugs into `app/` one at a time and reruns the tests, to check whether the tests actually catch real bugs and not just cover lines.
+`mutmut` introduces small bugs into `app/`, `features/`, and `shared/` one at a time and reruns the tests, to check whether the tests actually catch real bugs and not just cover lines.
 ```bash
 mutmut run
 mutmut results
@@ -75,7 +75,7 @@ mutmut results
 ## Type checking and linting
 
 ### Pyright
-`pyright` type-checks `app/` in strict mode.
+`pyright` type-checks `app/`, `features/`, and `shared/` in strict mode.
 ```bash
 pyright
 ```
