@@ -36,19 +36,7 @@ Contract tests are the source of truth for API behavior. If they conflict with a
 
 ## Architecture
 
-Feature-based: `app/main.py` is a composition root, business logic lives in `features/<feature>/`, and `shared/` holds only logic genuinely independent of any feature.
-
-- **`app/main.py`**: creates the `FastAPI` app (`create_app()`), registers the global `RequestValidationError` and `ServerNotFoundError` handlers and `/favicon.ico`, and mounts each feature's router. No business logic here by design. The `RequestValidationError` handler is dead code kept as a safety net; nothing triggers it in practice, since `register_server` validates the body manually.
-- **`features/servers/`**: the only feature today. Owns everything about registering and discovering game servers.
-  - **`routes.py`**: `create_router(store)` builds the `APIRouter` for all four endpoints and wires each one to `controllers/`.
-  - **`controllers/`**: the use cases (`register_server`, `list_servers`, `get_specific_server`, `get_players_of_server`). `register_server` parses the body manually with `json.loads(await request.body())` instead of a Pydantic body parameter, so it works regardless of the request's `Content-Type` header. `get_specific_server`/`get_players_of_server` raise `ServerNotFoundError` rather than building the 404 response themselves.
-  - **`models/`**: `RegisterServerInput` (request body, `strict=True`, `extra="ignore"`) and `Server` (response shape) are kept as separate classes on purpose: `ip` is server-assigned, not client-supplied, and `Server` has no `updated_at` field to expose.
-  - **`services/server_storage.py`**: `ServerStorage`, one `dict[(ip, port), _Entry]` behind one `threading.Lock`. `register()` always does `pop(key, None)` before re-inserting so an update moves the entry to the end of iteration order. Expiry is a lazy sweep on every `get()`/`list()` call, not a background thread.
-  - **`exceptions/server_exceptions.py`**: `ServerNotFoundError`, the only named domain exception today. Everything else (invalid input, invalid port) stays as a plain `error_response()` call, there's no other domain-level failure condition worth naming yet.
-  - A feature must never import another feature's internals directly (`features.<other>.controllers`, `.services`, or non-public models). If a future feature needs data from `servers`, go through its public interface (`features/servers/__init__.py`), a `shared/` abstraction if the logic is truly domain-independent, or an event if the dependency is one-way and optional. Don't reach for an event when a plain call through the public interface is simpler.
-- **`shared/errors.py`**: `error_response(status_code, message)`, the `{"message": ...}` envelope used for every error response. Holds zero domain knowledge on purpose, so it's safe to share across any future feature.
-- **`app/__main__.py`**: `python -m app` entrypoint, calls `uvicorn.run("app.main:app", ..., proxy_headers=False)`. That flag is deliberate: uvicorn defaults to trusting `X-Forwarded-For` from `127.0.0.1`, which would let a client spoof its registered IP.
-- **`app/static/favicon.ico`**: a static asset, not code.
+If you need to know project's architecture, analyze it from the file: ARCHITECTURE.md.
 
 ## Code style
 
