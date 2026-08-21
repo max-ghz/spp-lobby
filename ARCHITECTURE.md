@@ -13,14 +13,18 @@ Create `features/<feature>/` with only what it actually needs:
 
 Don't create empty `services/`, `repositories/`, `exceptions/`, or `events.py` a feature doesn't need yet.
 
-Wire it into the app from `app/main.py`, by importing the feature's router factory and mounting it with `app.include_router(...)`.
+Wire it into the app from `app/main.py`, by importing the feature's module-level `router` and mounting it with `app.include_router(...)`. If a route needs feature state (like a store), inject it with `Depends`, reading it off `request.app.state`, don't build the router inside a factory function, decorated route handlers nested inside another function trip Pyright's `reportUnusedFunction` in strict mode.
 
 ## Where things go
 
-- **New route** goes in `features/<feature>/routes.py`. It should only parse the HTTP request, call a controller, and return the result. No `try`/`except`, no other control flow, no direct calls to a service.
+- **New route** goes in `features/<feature>/routes.py`, as a module-level function decorated with `@router.get(...)`/`@router.post(...)`/etc. It should only parse the HTTP request, call a controller, and return the result. No `try`/`except`, no other control flow, no direct calls to a service.
 - **New controller** goes in `features/<feature>/controllers/`. Request validation, orchestration, and calls into `services/` happen here.
 - **New model** goes in `features/<feature>/models/`, in the feature whose domain it represents. A model doesn't move to `shared/` just because another feature could technically import it.
-- **New domain exception** goes in `features/<feature>/exceptions/`. A controller raises it instead of building an HTTP response inline; `app/main.py` registers a `@app.exception_handler(...)` that translates it to the right status code, the same way it already does for `RequestValidationError`.
+- **New domain exception** goes in `features/<feature>/exceptions/`. A controller raises it instead of building an HTTP response inline; `app/main.py` registers a handler that translates it to the right status code, the same way it already does for `RequestValidationError`.
+
+## Decorator syntax
+
+Prefer `@decorator` syntax over explicit `thing.method(...)(handler)` calls everywhere you can, it's more idiomatic FastAPI. The one exception is `app/main.py`'s `create_app()`: it's a factory, called fresh per test for isolation, so its exception handlers and `/favicon.ico` route are registered on a `FastAPI()` instance that doesn't exist at module load time. Decorating a function nested inside `create_app()` trips Pyright's `reportUnusedFunction` in strict mode (it only recognizes decorator-based "usage" for module-level functions, not local ones), so those specific handlers stay as explicit calls. Everything else, module-level routers and their routes, should use decorators.
 
 ## When to use `shared/`
 

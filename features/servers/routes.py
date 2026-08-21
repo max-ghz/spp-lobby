@@ -1,31 +1,31 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 
 from features.servers import controllers
 from features.servers.models import Server
 from features.servers.services import ServerStorage
 
+router = APIRouter(prefix="/servers")
 
-def create_router(store: ServerStorage) -> APIRouter:
-    router = APIRouter()
 
-    def list_servers() -> list[Server]:
-        return controllers.list_servers(store)
+def get_store(request: Request) -> ServerStorage:
+    return request.app.state.store
 
-    router.get("/servers", response_model=list[Server])(list_servers)
 
-    async def register_server(request: Request):
-        return await controllers.register_server(request, store)
+@router.get("", response_model=list[Server])
+def list_servers(store: ServerStorage = Depends(get_store)) -> list[Server]:
+    return controllers.list_servers(store)
 
-    router.post("/servers", status_code=201)(register_server)
 
-    def get_specific_server(ip: str, port: str):
-        return controllers.get_specific_server(ip, port, store)
+@router.post("", status_code=201)
+async def register_server(request: Request, store: ServerStorage = Depends(get_store)):
+    return await controllers.register_server(request, store)
 
-    router.get("/servers/{ip}/{port}")(get_specific_server)
 
-    def get_players_of_server(ip: str, port: str):
-        return controllers.get_players_of_server(ip, port, store)
+@router.get("/{ip}/{port}")
+def get_specific_server(ip: str, port: str, store: ServerStorage = Depends(get_store)):
+    return controllers.get_specific_server(ip, port, store)
 
-    router.get("/servers/{ip}/{port}/players")(get_players_of_server)
 
-    return router
+@router.get("/{ip}/{port}/players")
+def get_players_of_server(ip: str, port: str, store: ServerStorage = Depends(get_store)):
+    return controllers.get_players_of_server(ip, port, store)

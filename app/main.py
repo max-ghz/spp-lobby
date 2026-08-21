@@ -5,7 +5,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
 from features.servers.exceptions import ServerNotFoundError
-from features.servers.routes import create_router
+from features.servers.routes import router
 from features.servers.services import ServerStorage
 from shared.errors import error_response
 
@@ -14,8 +14,10 @@ FAVICON_PATH = Path(__file__).parent / "static" / "favicon.ico"
 
 def create_app() -> FastAPI:
     app = FastAPI()
-    store = ServerStorage()
+    app.state.store = ServerStorage()
 
+    # app doesn't exist until this factory runs, so handlers here use explicit
+    # registration instead of @decorator syntax (see ARCHITECTURE.md)
     async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
         return error_response(400, "Invalid input")
 
@@ -31,7 +33,7 @@ def create_app() -> FastAPI:
 
     app.get("/favicon.ico", include_in_schema=False)(favicon)
 
-    app.include_router(create_router(store))
+    app.include_router(router)
 
     return app
 
