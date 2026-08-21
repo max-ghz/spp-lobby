@@ -1,8 +1,12 @@
 import threading
 import time
 
-from app.models import RegisterServerInput
-from app.storage import DEFAULT_SERVER_EXPIRY_SECONDS, ServerStore, server_expiry_seconds
+from features.servers.models import RegisterServerInput
+from features.servers.services.server_storage import (
+    DEFAULT_SERVER_EXPIRY_SECONDS,
+    ServerStorage,
+    server_expiry_seconds,
+)
 
 
 def _input(port: int, **overrides) -> RegisterServerInput:
@@ -55,12 +59,12 @@ def test_server_expiry_seconds_honors_valid_override(monkeypatch):
 
 
 def test_get_not_found():
-    store = ServerStore()
+    store = ServerStorage()
     assert store.get("10.0.0.1", 12345) is None
 
 
 def test_get_found():
-    store = ServerStore()
+    store = ServerStorage()
     store.register("10.0.0.1", _input(12345))
 
     server = store.get("10.0.0.1", 12345)
@@ -71,13 +75,13 @@ def test_get_found():
 
 
 def test_empty_store_list_is_empty():
-    store = ServerStore()
+    store = ServerStorage()
     assert store.list() == []
 
 
 def test_removes_only_expired_entries(monkeypatch):
     monkeypatch.setenv("SERVER_EXPIRY_TIME_IN_SECONDS", str(DEFAULT_SERVER_EXPIRY_SECONDS))
-    store = ServerStore()
+    store = ServerStorage()
     now = int(time.time())
 
     store.register("1.1.1.1", _input(1000))
@@ -99,7 +103,7 @@ def test_removes_only_expired_entries(monkeypatch):
 
 def test_exact_ttl_boundary(monkeypatch):
     monkeypatch.setenv("SERVER_EXPIRY_TIME_IN_SECONDS", "100")
-    store = ServerStore()
+    store = ServerStorage()
     now = int(time.time())
 
     store.register("4.4.4.4", _input(4000))
@@ -117,7 +121,7 @@ def test_exact_ttl_boundary(monkeypatch):
 def test_updating_a_server_moves_it_to_the_end_of_the_list():
     # GET /servers is ordered oldest-updated first, so re-registering an
     # entry must move it past anything that hasn't been touched since
-    store = ServerStore()
+    store = ServerStorage()
     store.register("1.1.1.1", _input(1000))
     store.register("2.2.2.2", _input(2000))
 
@@ -128,7 +132,7 @@ def test_updating_a_server_moves_it_to_the_end_of_the_list():
 
 
 def test_update_overwrites_and_deduplicates():
-    store = ServerStore()
+    store = ServerStorage()
     store.register("9.9.9.9", _input(23073, name="Old Name"))
     store.register("9.9.9.9", _input(23073, name="New Name"))
 
@@ -139,7 +143,7 @@ def test_update_overwrites_and_deduplicates():
 
 
 def test_concurrent_registration_of_different_servers_loses_nothing():
-    store = ServerStore()
+    store = ServerStorage()
     n = 50
 
     def register(i: int) -> None:
@@ -155,7 +159,7 @@ def test_concurrent_registration_of_different_servers_loses_nothing():
 
 
 def test_concurrent_reregistration_of_the_same_server_never_duplicates():
-    store = ServerStore()
+    store = ServerStorage()
     n = 50
 
     def register(i: int) -> None:
@@ -174,7 +178,7 @@ def test_concurrent_reregistration_of_the_same_server_never_duplicates():
 
 def test_concurrent_registration_and_expiry_sweeps_are_consistent(monkeypatch):
     monkeypatch.setenv("SERVER_EXPIRY_TIME_IN_SECONDS", "100")
-    store = ServerStore()
+    store = ServerStorage()
     now = int(time.time())
 
     for i in range(10):

@@ -3,7 +3,8 @@ import threading
 import time
 from dataclasses import dataclass
 
-from app.models import RegisterServerInput, Server
+from features.servers.models.register_input import RegisterServerInput
+from features.servers.models.server import Server
 
 DEFAULT_SERVER_EXPIRY_SECONDS = 5 * 60
 
@@ -30,7 +31,7 @@ class _Entry:
     updated_at: int
 
 
-class ServerStore:
+class ServerStorage:
     """
     In-memory, thread-safe server registry
 

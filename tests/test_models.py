@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from app.models import RegisterServerInput
+from features.servers.models import RegisterServerInput
 
 
 def _valid_boundary_kwargs(**overrides) -> dict:
