@@ -310,7 +310,8 @@ def test_update(client):
     assert server["players"] == ["charlie"]
 
 
-def test_per_ip_registration_limit(client):
+def test_per_ip_registration_limit(client, monkeypatch):
+    monkeypatch.setenv("RATE_LIMIT_BASE_DELAY_SECONDS", "0")  # would otherwise throttle these rapid posts
     for i in range(10):
         register_and_require_created(client, valid_register_payload(22000 + i))
 
@@ -318,7 +319,8 @@ def test_per_ip_registration_limit(client):
     assert_error_response(resp, 429, "too many servers registered for this ip")
 
 
-def test_per_ip_registration_limit_allows_updating_existing_servers(client):
+def test_per_ip_registration_limit_allows_updating_existing_servers(client, monkeypatch):
+    monkeypatch.setenv("RATE_LIMIT_BASE_DELAY_SECONDS", "0")  # would otherwise throttle these rapid posts
     for i in range(10):
         register_and_require_created(client, valid_register_payload(22100 + i))
 
