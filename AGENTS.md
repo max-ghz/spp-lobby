@@ -18,6 +18,8 @@ pip install -e ".[dev]"
 
 Run it with `PORT=8000 python -m app`. Config is env vars only: `PORT` (listen port) and `SERVER_EXPIRY_TIME_IN_SECONDS` (registration TTL, default 300).
 
+A `Dockerfile` is also available for building and running the app as a container, for hosting; it's not used for development or the test/lint tooling below, which all run against the venv.
+
 ## Tests
 
 `pytest`, driven by `pytest-cov` for coverage and `mutmut` for mutation testing.

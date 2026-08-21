@@ -38,7 +38,6 @@ pip install -e ".[dev]"
 ```
 
 ## Running
-
 ```bash
 PORT=8000 python -m app
 ```
@@ -46,6 +45,13 @@ PORT=8000 python -m app
 Then register a sample server:
 ```bash
 python scripts/register_test_server.py
+```
+
+## Docker
+Alternatively, you can build the image using the Dockerfile and run it as a container instead:
+```bash
+docker build -t spp-lobby .
+docker run -d -p 8000:8000 -e SERVER_EXPIRY_TIME_IN_SECONDS=300 spp-lobby
 ```
 
 ## Testing
