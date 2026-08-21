@@ -23,7 +23,9 @@ The project uses the following packages:
 - [Pydantic](https://docs.pydantic.dev/): Request/response validation and serialization
 - [Uvicorn](https://uvicorn.dev/): ASGI server that runs the application
 
-## Building
+## Setup
+
+### Building
 Make sure you have Python 3.12 (or higher) and clone this repository:
 ```bash
 git clone git@github.com:max-ghz/spp-lobby.git
@@ -37,7 +39,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-## Running
+### Running
 ```bash
 PORT=8000 python -m app
 ```
@@ -47,23 +49,25 @@ Then register a sample server:
 python scripts/register_test_server.py
 ```
 
-## Docker
+### Docker
 Alternatively, you can build the image using the Dockerfile and run it as a container instead:
 ```bash
 docker build -t spp-lobby .
 docker run -d -p 8000:8000 -e SERVER_EXPIRY_TIME_IN_SECONDS=300 spp-lobby
 ```
 
-## Testing
+## Development
 
-### Unit tests
+### Testing
+
+#### Unit tests
 Unit tests cover `features/servers/models/` and `features/servers/services/server_storage.py` directly.
 ```bash
 pytest                                       # all tests
 pytest --cov --cov-report=term-missing       # with coverage
 ```
 
-### Contract tests
+#### Contract tests
 `tests/contract/` are black-box HTTP tests: they only talk to the API over real HTTP, not to internal Python types. Each test starts its own server, so no manual setup is needed.
 ```bash
 pytest tests/contract/
@@ -74,22 +78,22 @@ Optionally, you can point them at a different, already-running server instead:
 SPP_LOBBY_BASE_URL=http://put_real_server_here pytest tests/contract/
 ```
 
-### Mutation testing
+#### Mutation testing
 `mutmut` introduces small bugs into `app/`, `features/`, and `shared/` one at a time and reruns the tests, to check whether the tests actually catch real bugs and not just cover lines.
 ```bash
 mutmut run
 mutmut results
 ```
 
-## Type checking and linting
+### Type checking and linting
 
-### Pyright
+#### Pyright
 `pyright` type-checks `app/`, `features/`, and `shared/` in strict mode.
 ```bash
 pyright
 ```
 
-### Ruff
+#### Ruff
 `ruff` lints and formats the whole project.
 ```bash
 ruff check .
