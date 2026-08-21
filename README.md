@@ -1,5 +1,8 @@
 # Soldank++ Lobby
 
+[![CI](https://github.com/max-ghz/spp-lobby/actions/workflows/ci.yml/badge.svg)](https://github.com/max-ghz/spp-lobby/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/max-ghz/spp-lobby/branch/main/graph/badge.svg)](https://codecov.io/gh/max-ghz/spp-lobby)
+
 [Soldank++](https://github.com/nedik/soldank-plus-plus) JSON API based lobby server. Enables registering and discovering all registered [Soldank++](https://github.com/nedik/soldank-plus-plus) servers.
 
 ## Endpoints
@@ -83,6 +86,6 @@ pyright
 ### Ruff
 `ruff` lints and formats the whole project.
 ```bash
-ruff check .    # lint
-ruff format .   # format
+ruff check .
+ruff format .
 ```
