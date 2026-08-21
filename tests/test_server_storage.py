@@ -1,9 +1,13 @@
 import threading
 import time
 
+import pytest
+
+from features.servers.exceptions import ServerLimitExceededError
 from features.servers.models import RegisterServerInput
 from features.servers.services.server_storage import (
     DEFAULT_SERVER_EXPIRY_SECONDS,
+    MAX_SERVERS_PER_IP,
     ServerStorage,
     server_expiry_seconds,
 )
@@ -147,7 +151,8 @@ def test_concurrent_registration_of_different_servers_loses_nothing():
     n = 50
 
     def register(i: int) -> None:
-        store.register("6.6.6.6", _input(30000 + i, name=f"server-{i}"))
+        # distinct ips, so the per-ip limit doesn't interfere with this test
+        store.register(f"6.6.6.{i}", _input(30000 + i, name=f"server-{i}"))
 
     threads = [threading.Thread(target=register, args=(i,)) for i in range(n)]
     for t in threads:
@@ -174,6 +179,52 @@ def test_concurrent_reregistration_of_the_same_server_never_duplicates():
     servers = store.list()
     matching = [s for s in servers if s.ip == "7.7.7.7" and s.port == 23073]
     assert len(matching) == 1, f"expected exactly 1 entry, found {len(matching)}"
+
+
+def test_register_rejects_past_the_per_ip_limit():
+    store = ServerStorage()
+    for i in range(MAX_SERVERS_PER_IP):
+        store.register("11.11.11.11", _input(50000 + i))
+
+    with pytest.raises(ServerLimitExceededError):
+        store.register("11.11.11.11", _input(50000 + MAX_SERVERS_PER_IP))
+
+    assert len(store.list()) == MAX_SERVERS_PER_IP
+
+
+def test_register_limit_is_per_ip():
+    store = ServerStorage()
+    for i in range(MAX_SERVERS_PER_IP):
+        store.register("11.11.11.11", _input(50000 + i))
+
+    store.register("12.12.12.12", _input(51000))  # different ip, must not be rejected
+
+    assert len(store.list()) == MAX_SERVERS_PER_IP + 1
+
+
+def test_reregistering_an_existing_key_at_the_limit_is_allowed():
+    store = ServerStorage()
+    for i in range(MAX_SERVERS_PER_IP):
+        store.register("11.11.11.11", _input(50000 + i, name="Old Name"))
+
+    store.register("11.11.11.11", _input(50000, name="New Name"))  # update, not a new slot
+
+    servers = store.list()
+    assert len(servers) == MAX_SERVERS_PER_IP
+    assert any(s.port == 50000 and s.name == "New Name" for s in servers)
+
+
+def test_expired_servers_free_up_the_per_ip_limit(monkeypatch):
+    monkeypatch.setenv("SERVER_EXPIRY_TIME_IN_SECONDS", "100")
+    store = ServerStorage()
+    now = int(time.time())
+    for i in range(MAX_SERVERS_PER_IP):
+        store.register("11.11.11.11", _input(50000 + i))
+        store._servers[("11.11.11.11", 50000 + i)].updated_at = now - 200  # already expired
+
+    store.register("11.11.11.11", _input(60000))  # must not raise, old entries are gone
+
+    assert [s.port for s in store.list()] == [60000]
 
 
 def test_concurrent_registration_and_expiry_sweeps_are_consistent(monkeypatch):

@@ -3,10 +3,12 @@ import threading
 import time
 from dataclasses import dataclass
 
+from features.servers.exceptions.server_exceptions import ServerLimitExceededError
 from features.servers.models.register_input import RegisterServerInput
 from features.servers.models.server import Server
 
 DEFAULT_SERVER_EXPIRY_SECONDS = 5 * 60
+MAX_SERVERS_PER_IP = 10
 
 
 def server_expiry_seconds() -> int:
@@ -48,8 +50,14 @@ class ServerStorage:
         server = Server.from_input(input, ip)
         key = (ip, input.port)
         with self._lock:
+            self._remove_expired_locked()
+            if key not in self._servers and self._count_for_ip_locked(ip) >= MAX_SERVERS_PER_IP:
+                raise ServerLimitExceededError(ip)
             self._servers.pop(key, None)
             self._servers[key] = _Entry(server=server, updated_at=int(time.time()))
+
+    def _count_for_ip_locked(self, ip: str) -> int:
+        return sum(1 for existing_ip, _ in self._servers if existing_ip == ip)
 
     def get(self, ip: str, port: int) -> Server | None:
         with self._lock:

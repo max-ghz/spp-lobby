@@ -4,7 +4,7 @@ from tests.contract.helpers import valid_register_payload
 
 
 def test_get_servers_during_concurrent_post(client):
-    writers = 25
+    writers = 10  # the per-ip registration limit, since every writer shares the client's ip
     readers = 25
     problems: list[str] = []
     lock = threading.Lock()

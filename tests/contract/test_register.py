@@ -310,6 +310,26 @@ def test_update(client):
     assert server["players"] == ["charlie"]
 
 
+def test_per_ip_registration_limit(client):
+    for i in range(10):
+        register_and_require_created(client, valid_register_payload(22000 + i))
+
+    resp = client.post("/servers", json=valid_register_payload(22010))
+    assert_error_response(resp, 429, "too many servers registered for this ip")
+
+
+def test_per_ip_registration_limit_allows_updating_existing_servers(client):
+    for i in range(10):
+        register_and_require_created(client, valid_register_payload(22100 + i))
+
+    updated = valid_register_payload(22100)
+    updated["name"] = "Renamed Server"
+    register_and_require_created(client, updated)  # updating one of the 10 must not count as a new one
+
+    get = client.get("/servers/127.0.0.1/22100")
+    assert get.json()["name"] == "Renamed Server"
+
+
 def test_duplicate_ip_and_port(client):
     register_and_require_created(client, valid_register_payload(21200))
     register_and_require_created(client, valid_register_payload(21200))

@@ -1,3 +1,3 @@
-from features.servers.exceptions.server_exceptions import ServerNotFoundError
+from features.servers.exceptions.server_exceptions import ServerLimitExceededError, ServerNotFoundError
 
-__all__ = ["ServerNotFoundError"]
+__all__ = ["ServerLimitExceededError", "ServerNotFoundError"]
