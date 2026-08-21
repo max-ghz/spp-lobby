@@ -4,6 +4,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
+from features.servers.exceptions import ServerNotFoundError
 from features.servers.models import RegisterServerInput, Server
 from features.servers.services import ServerStorage
 from shared.errors import error_response
@@ -43,7 +44,7 @@ def get_specific_server(ip: str, port: str, store: ServerStorage) -> Server | JS
 
     server = store.get(ip, parsed_port)
     if server is None:
-        return error_response(404, "server not found")
+        raise ServerNotFoundError(ip, parsed_port)
 
     return server
 
@@ -55,6 +56,6 @@ def get_players_of_server(ip: str, port: str, store: ServerStorage) -> list[str]
 
     server = store.get(ip, parsed_port)
     if server is None:
-        return error_response(404, "server not found")
+        raise ServerNotFoundError(ip, parsed_port)
 
     return server.players

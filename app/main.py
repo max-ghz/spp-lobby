@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
+from features.servers.exceptions import ServerNotFoundError
 from features.servers.routes import create_router
 from features.servers.services import ServerStorage
 from shared.errors import error_response
@@ -19,6 +20,11 @@ def create_app() -> FastAPI:
         return error_response(400, "Invalid input")
 
     app.exception_handler(RequestValidationError)(validation_error_handler)
+
+    async def server_not_found_handler(request: Request, exc: ServerNotFoundError) -> JSONResponse:
+        return error_response(404, "server not found")
+
+    app.exception_handler(ServerNotFoundError)(server_not_found_handler)
 
     def favicon() -> FileResponse:
         return FileResponse(FAVICON_PATH)

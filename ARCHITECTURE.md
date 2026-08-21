@@ -9,8 +9,9 @@ Create `features/<feature>/` with only what it actually needs:
 - `controllers/`: use-case functions, the feature's business/application logic.
 - `models/`: the feature's own Pydantic models.
 - `services/`: only if the feature needs its own state, storage, or domain rules beyond validation.
+- `exceptions/`: only once the feature has a genuine domain-level failure condition worth naming (e.g. `ServerNotFoundError`), not for input validation errors that Pydantic already covers.
 
-Don't create empty `services/`, `repositories/`, or `events.py` a feature doesn't need yet.
+Don't create empty `services/`, `repositories/`, `exceptions/`, or `events.py` a feature doesn't need yet.
 
 Wire it into the app from `app/main.py`, by importing the feature's router factory and mounting it with `app.include_router(...)`.
 
@@ -19,6 +20,7 @@ Wire it into the app from `app/main.py`, by importing the feature's router facto
 - **New route** goes in `features/<feature>/routes.py`. It should only parse the HTTP request, call a controller, and return the result. No `try`/`except`, no other control flow, no direct calls to a service.
 - **New controller** goes in `features/<feature>/controllers/`. Request validation, orchestration, and calls into `services/` happen here.
 - **New model** goes in `features/<feature>/models/`, in the feature whose domain it represents. A model doesn't move to `shared/` just because another feature could technically import it.
+- **New domain exception** goes in `features/<feature>/exceptions/`. A controller raises it instead of building an HTTP response inline; `app/main.py` registers a `@app.exception_handler(...)` that translates it to the right status code, the same way it already does for `RequestValidationError`.
 
 ## When to use `shared/`
 
@@ -40,6 +42,6 @@ The only sanctioned way to depend on another feature is through its public inter
 
 `shared/` must never import from `features/`.
 
-`app/main.py` may import a feature's `routes.py` (to mount it) and `services` (to construct state and inject it), but never a feature's `controllers/` or `models/`, that would put business logic into the composition root.
+`app/main.py` may import a feature's `routes.py` (to mount it), `services` (to construct state and inject it), and `exceptions` (to register a handler for it), but never a feature's `controllers/` or `models/`, that would put business logic into the composition root.
 
 `tests/test_architecture.py` enforces these rules automatically on every test run.
