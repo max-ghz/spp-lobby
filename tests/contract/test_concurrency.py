@@ -3,7 +3,8 @@ import threading
 from tests.contract.helpers import valid_register_payload
 
 
-def test_get_servers_during_concurrent_post(client):
+def test_get_servers_during_concurrent_post(client, monkeypatch):
+    monkeypatch.setenv("RATE_LIMIT_BASE_DELAY_SECONDS", "0")  # would otherwise throttle these rapid posts
     writers = 10  # the per-ip registration limit, since every writer shares the client's ip
     readers = 25
     problems: list[str] = []
@@ -36,7 +37,8 @@ def test_get_servers_during_concurrent_post(client):
     assert len(servers) == writers, f"expected {writers} servers, got {len(servers)}"
 
 
-def test_get_specific_server_during_update(client):
+def test_get_specific_server_during_update(client, monkeypatch):
+    monkeypatch.setenv("RATE_LIMIT_BASE_DELAY_SECONDS", "0")  # would otherwise throttle these rapid posts
     ip = "127.0.0.1"
     port = 24100
     client.post("/servers", json=valid_register_payload(port))

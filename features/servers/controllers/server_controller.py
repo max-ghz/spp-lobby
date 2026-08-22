@@ -4,9 +4,9 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
-from features.servers.exceptions import ServerNotFoundError
+from features.servers.exceptions import RateLimitExceededError, ServerNotFoundError
 from features.servers.models import RegisterServerInput, Server
-from features.servers.services import ServerStorage
+from features.servers.services import RateLimiter, ServerStorage
 from shared.errors import error_response
 
 
@@ -19,7 +19,13 @@ def _parse_port(port: str) -> int | None:
     return value
 
 
-async def register_server(request: Request, store: ServerStorage) -> JSONResponse:
+async def register_server(request: Request, store: ServerStorage, limiter: RateLimiter) -> JSONResponse:
+    ip = request.client.host if request.client else ""
+
+    retry_after_seconds = limiter.check(ip)
+    if retry_after_seconds is not None:
+        raise RateLimitExceededError(ip, retry_after_seconds)
+
     # Parsed manually, not via a Pydantic body param, so this works
     # regardless of the request's Content-Type header
     try:
@@ -28,7 +34,6 @@ async def register_server(request: Request, store: ServerStorage) -> JSONRespons
     except (json.JSONDecodeError, ValidationError):
         return error_response(400, "Invalid input")
 
-    ip = request.client.host if request.client else ""
     store.register(ip, input)
     return JSONResponse(status_code=201, content={})
 

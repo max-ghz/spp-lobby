@@ -16,6 +16,8 @@
 ## Environment variables
 - `PORT`: what to listen on when run directly (default 8000).
 - `SERVER_EXPIRY_TIME_IN_SECONDS`: how long a server is kept without re-registering (default 300 = 5 minutes).
+- `RATE_LIMIT_BASE_DELAY_SECONDS`: length of the first escalation tier for repeated registrations from the same ip (default 10). Set to 0 to disable registration throttling.
+- `RATE_LIMIT_RESET_SECONDS`: how long an ip must stay quiet before its registration throttling resets (default 300 = 5 minutes).
 
 ## Dependencies
 The project uses the following packages:
