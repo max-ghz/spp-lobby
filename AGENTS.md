@@ -16,7 +16,7 @@ source .venv/bin/activate
 pip install -e ".[dev]"
 ```
 
-Run it with `PORT=8000 python -m app`. Config is env vars only: `PORT` (listen port) and `SERVER_EXPIRY_TIME_IN_SECONDS` (registration TTL, default 300).
+Run it with `PORT=8000 python -m app`. Config is env vars only: `PORT` (listen port), `SERVER_EXPIRY_TIME_IN_SECONDS` (registration TTL, default 300), `RATE_LIMIT_BASE_DELAY_SECONDS` (registration throttling's first escalation tier, default 10, 0 disables it) and `RATE_LIMIT_RESET_SECONDS` (how long a quiet ip before its throttling state resets, default 300).
 
 A `Dockerfile` is also available for building and running the app as a container, for hosting; it's not used for development or the test/lint tooling below, which all run against the venv.
 

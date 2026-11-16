@@ -1,12 +1,13 @@
+import math
 from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
 
-from features.servers.exceptions import ServerLimitExceededError, ServerNotFoundError
+from features.servers.exceptions import RateLimitExceededError, ServerLimitExceededError, ServerNotFoundError
 from features.servers.routes import router
-from features.servers.services import ServerStorage
+from features.servers.services import RateLimiter, ServerStorage
 from shared.errors import error_response
 
 FAVICON_PATH = Path(__file__).parent / "static" / "favicon.ico"
@@ -15,6 +16,7 @@ FAVICON_PATH = Path(__file__).parent / "static" / "favicon.ico"
 def create_app() -> FastAPI:
     app = FastAPI()
     app.state.store = ServerStorage()
+    app.state.rate_limiter = RateLimiter()
 
     # app doesn't exist until this factory runs, so handlers here use explicit
     # registration instead of @decorator syntax (see ARCHITECTURE.md)
@@ -32,6 +34,13 @@ def create_app() -> FastAPI:
         return error_response(429, "too many servers registered for this ip")
 
     app.exception_handler(ServerLimitExceededError)(server_limit_exceeded_handler)
+
+    async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceededError) -> JSONResponse:
+        response = error_response(429, "too many registration attempts, slow down")
+        response.headers["Retry-After"] = str(math.ceil(exc.retry_after_seconds))
+        return response
+
+    app.exception_handler(RateLimitExceededError)(rate_limit_exceeded_handler)
 
     def favicon() -> FileResponse:
         return FileResponse(FAVICON_PATH)
